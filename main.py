@@ -1,41 +1,52 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-import google.generativeai as genai
-from dotenv import load_dotenv
+from fastapi import FastAPI
+from pydantic import BaseModel
+import requests
 import os
+from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# ✅ Load environment variables from .env (same folder)
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
 
 app = FastAPI()
 
-# Allow all origins (for web, mobile, etc.)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class ChatRequest(BaseModel):
+    message: str
 
-# Get the Gemini API key safely
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+# ✅ Read the key from environment
+API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
-if not GOOGLE_API_KEY:
-    raise ValueError("Missing GOOGLE_API_KEY. Set it in your .env file.")
+# ✅ Print for debugging (you can remove this later)
+print("Loaded GEMINI_API_KEY:", "FOUND ✅" if API_KEY else "NOT FOUND ❌")
 
-# Configure Gemini API
-genai.configure(api_key=GOOGLE_API_KEY)
+chat_history = []
 
 @app.post("/chat")
-async def chat(request: Request):
-    data = await request.json()
-    user_message = data.get("message", "")
+def chat(req: ChatRequest):
+    if not API_KEY:
+        return {"error": "Missing GEMINI_API_KEY in environment"}
 
-    # Create model instance
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    payload = {
+        "contents": [{"parts": [{"text": req.message}]}]
+    }
 
-    # Generate response
-    response = model.generate_content(user_message)
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": API_KEY
+    }
 
-    return {"response": response.text}
+    response = requests.post(GEMINI_API_URL, headers=headers, json=payload)
+
+    if response.status_code != 200:
+        print("Gemini API error:", response.text)
+        return {"error": "Gemini API error", "details": response.text}
+
+    data = response.json()
+    reply = data["candidates"][0]["content"]["parts"][0]["text"]
+
+    chat_history.append({"user": req.message, "bot": reply})
+    return {"reply": reply}
+
+@app.get("/chat")
+def get_history():
+    return chat_history
