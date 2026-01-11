@@ -203,13 +203,4 @@ MIT License – Free to use and modify.
 
 ```
 
----
 
-If you want, I can also:
-- Add **badges** (Build, Python version, License)
-- Make a **short GitHub description**
-- Create a **demo GIF section**
-- Customize it for **Render deployment README**
-
-Just tell me 👍
-```
