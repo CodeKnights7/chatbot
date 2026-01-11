@@ -2,5 +2,13 @@
   {
     "user": "Hello how are you",
     "bot": "I am doing well, thank you for asking! How are you today?\n"
+  },
+  {
+    "user": "hi",
+    "bot": "Hello! 😊 How can I help you today?"
+  },
+  {
+    "user": "hi",
+    "bot": "Hello! 😊 How can I assist you today?"
   }
 ]

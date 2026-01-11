@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vector DB (optional – regenerate if needed)
+data/faiss.index
+
+# Logs / temp
+*.log
+__pycache__/
+*.pyc
+venv/
+.env
+data/faiss.index
